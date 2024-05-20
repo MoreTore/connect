@@ -5,7 +5,7 @@ import localforage from 'localforage';
 import { withStyles, Typography } from '@material-ui/core';
 import { Clear } from '@material-ui/icons';
 
-import MyCommaAuth from '@commaai/my-comma-auth';
+import MyCommaAuth from '@moretore/my-comma-auth';
 
 import Colors from '../../colors';
 import { IosShareIcon } from '../../icons';

@@ -7,7 +7,7 @@ import { withStyles, Typography, IconButton, Button, CircularProgress } from '@m
 import KeyboardBackspaceIcon from '@material-ui/icons/KeyboardBackspace';
 import CheckIcon from '@material-ui/icons/Check';
 
-import { billing as Billing } from '@commaai/api';
+import { billing as Billing } from '@moretore/api';
 
 import { deviceNamePretty } from '../../utils';
 import ResizeHandler from '../ResizeHandler';

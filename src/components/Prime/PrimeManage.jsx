@@ -8,7 +8,7 @@ import { withStyles, Typography, Button, Modal, Paper, IconButton, CircularProgr
 import KeyboardBackspaceIcon from '@material-ui/icons/KeyboardBackspace';
 import PriorityHighIcon from '@material-ui/icons/PriorityHigh';
 
-import { billing as Billing } from '@commaai/api';
+import { billing as Billing } from '@moretore/api';
 import { deviceNamePretty, deviceTypePretty } from '../../utils';
 import ResizeHandler from '../ResizeHandler';
 import Colors from '../../colors';

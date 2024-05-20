@@ -1,7 +1,7 @@
 import { LOCATION_CHANGE } from 'connected-react-router';
 import * as Sentry from '@sentry/react';
 
-import MyCommaAuth from '@commaai/my-comma-auth';
+import MyCommaAuth from '@moretore/my-comma-auth';
 
 import * as Types from './actions/types';
 import { sendEvent } from './analytics-v2';

@@ -1,8 +1,8 @@
 import { push } from 'connected-react-router';
 import * as Sentry from '@sentry/react';
 import document from 'global/document';
-import { athena as Athena, billing as Billing, devices as Devices, drives as Drives } from '@commaai/api';
-import MyCommaAuth from '@commaai/my-comma-auth';
+import { athena as Athena, billing as Billing, devices as Devices, drives as Drives } from '@moretore/api';
+import MyCommaAuth from '@moretore/my-comma-auth';
 
 import * as Types from './types';
 import { resetPlayback, selectLoop } from '../timeline/playback';

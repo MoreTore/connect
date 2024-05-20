@@ -1,4 +1,4 @@
-window.COMMA_URL_ROOT = 'https://api.comma.ai/';
-window.ATHENA_URL_ROOT = 'https://athena.comma.ai/';
+window.COMMA_URL_ROOT = 'https://connect-api.duckdns.org/';
+window.ATHENA_URL_ROOT = 'https://connect-api.duckdns.org/ws/';
 window.BILLING_URL_ROOT = 'https://billing.comma.ai/';
-window.USERADMIN_URL_ROOT = 'https://useradmin.comma.ai/';
+window.USERADMIN_URL_ROOT = 'https://connect-useradmin.duckdns.org/';

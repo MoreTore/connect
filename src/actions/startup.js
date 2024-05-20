@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
-import { account as Account, devices as Devices } from '@commaai/api';
-import MyCommaAuth from '@commaai/my-comma-auth';
+import { account as Account, devices as Devices } from '@moretore/api';
+import MyCommaAuth from '@moretore/my-comma-auth';
 
 import * as Demo from '../demo';
 import { ACTION_STARTUP_DATA } from './types';

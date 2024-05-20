@@ -8,7 +8,7 @@ import {
   MenuItem,
 } from '@material-ui/core';
 
-import MyCommaAuth from '@commaai/my-comma-auth';
+import MyCommaAuth from '@moretore/my-comma-auth';
 
 const logOut = async () => {
   await MyCommaAuth.logOut();

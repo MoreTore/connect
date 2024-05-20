@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 
 import { withStyles, Typography, Button, CircularProgress, Popper, Tooltip } from '@material-ui/core';
 
-import { athena as Athena, devices as Devices } from '@commaai/api';
+import { athena as Athena, devices as Devices } from '@moretore/api';
 import { analyticsEvent } from '../../actions';
 import Colors from '../../colors';
 import { deviceNamePretty, deviceIsOnline } from '../../utils';

@@ -7,8 +7,9 @@ services:
     ports:
       - "80:80"
     environment:
-      COMMA_URL_ROOT: https://api.comma.ai/
-      ATHENA_URL_ROOT: https://athena.comma.ai/
+      COMMA_URL_ROOT: https://connect-api.duckdns.org/
+      ATHENA_URL_ROOT: https://connect-api.duckdns.org/ws/
       BILLING_URL_ROOT: https://billing.comma.ai/
-      USERADMIN_URL_ROOT: https://useradmin.comma.ai/
+      USERADMIN_URL_ROOT: https://connect-useradmin.duckdns.org/
+
       SENTRY_ENV: connect-development

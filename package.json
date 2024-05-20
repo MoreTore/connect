@@ -24,8 +24,8 @@
     "node": ">=16"
   },
   "dependencies": {
-    "@commaai/api": "github:commaai/comma-api#3.1.1",
-    "@commaai/my-comma-auth": "^1.4.1",
+    "@moretore/api": "moretore/connect-api#v3.0.1",
+    "@moretore/my-comma-auth": "moretore/my-comma-auth#v1.0.2",
     "@mapbox/mapbox-sdk": "^0.15.3",
     "@material-ui/core": "^1.5.1",
     "@material-ui/icons": "^1.1.1",

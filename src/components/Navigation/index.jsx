@@ -9,7 +9,7 @@ import { withStyles, TextField, InputAdornment, Typography, Button, Menu, MenuIt
 import { Search, Clear, Refresh } from '@material-ui/icons';
 import dayjs from 'dayjs';
 
-import { athena as Athena, devices as Devices, navigation as NavigationApi } from '@commaai/api';
+import { athena as Athena, devices as Devices, navigation as NavigationApi } from '@moretore/api';
 import { primeNav, analyticsEvent } from '../../actions';
 import { DEFAULT_LOCATION, forwardLookup, getDirections, MAPBOX_STYLE, MAPBOX_TOKEN, networkPositioning, reverseLookup } from '../../utils/geocode';
 import Colors from '../../colors';

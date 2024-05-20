@@ -6,8 +6,8 @@ import * as Sentry from '@sentry/react';
 import { withStyles, Typography, IconButton } from '@material-ui/core';
 import SettingsIcon from '@material-ui/icons/Settings';
 
-import MyCommaAuth from '@commaai/my-comma-auth';
-import { devices as Devices } from '@commaai/api';
+import MyCommaAuth from '@moretore/my-comma-auth';
+import { devices as Devices } from '@moretore/api';
 
 import { updateDevices } from '../../actions';
 import Colors from '../../colors';
