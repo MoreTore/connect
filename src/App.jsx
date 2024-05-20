@@ -64,6 +64,7 @@ class App extends Component {
       }
     }
 
+
     const token = await MyCommaAuth.init();
     if (token) {
       Request.configure(token, this.apiErrorResponseCallback);
