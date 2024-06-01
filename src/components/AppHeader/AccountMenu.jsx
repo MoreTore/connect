@@ -53,7 +53,7 @@ const AccountMenu = ({ profile, open, anchorEl, onClose, ...rest }) => {
       <MenuItem
         className="py-3 px-4"
         component="a"
-        href="https://useradmin.comma.ai/"
+        href="https://connect-useradmin.duckdns.org/"
         target="_blank"
       >
         Manage Account
