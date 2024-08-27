@@ -49,19 +49,38 @@ class App extends Component {
   }
 
   async componentDidMount() {
+    console.log('componentDidMount called');
+  
     if (window.location) {
+      console.log('window.location is defined');
+      console.log('window.location.pathname:', window.location.pathname);
+      console.log(`AuthConfig.AUTH_PATH: ${AuthConfig.AUTH_PATH}`);
       if (window.location.pathname === AuthConfig.AUTH_PATH) {
+        console.log(`Pathname matches AuthConfig.AUTH_PATH: ${AuthConfig.AUTH_PATH}`);
         try {
+          console.log('Parsing query string:', window.location.search);
           const { code, provider } = qs.parse(window.location.search);
+          console.log('Parsed code:', code);
+          console.log('Parsed provider:', provider);
+  
           const token = await Auth.refreshAccessToken(code, provider);
+          console.log('Token received:', token);
+  
           if (token) {
+            console.log('Setting token in AuthStorage');
             AuthStorage.setCommaAccessToken(token);
+          } else {
+            console.log('No token received');
           }
         } catch (err) {
-          console.error(err);
+          console.error('Error caught:', err);
           Sentry.captureException(err, { fingerprint: 'app_auth_refresh_token' });
         }
+      } else {
+        console.log(`Pathname does not match AuthConfig.AUTH_PATH`);
       }
+    } else {
+      console.log('window.location is undefined');
     }
 
 
