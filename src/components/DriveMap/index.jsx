@@ -248,7 +248,7 @@ class DriveMap extends Component {
           'line-cap': 'round',
         },
         paint: {
-          'line-color': '#888',
+          'line-color': '#2aff24',
           'line-width': 8,
         },
       };
