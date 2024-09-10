@@ -137,11 +137,25 @@ class AnonymousLanding extends Component {
             <img alt="comma" src="/images/comma-white.png" className={classes.logoImg} />
           </div>
           <div className={classes.logoSpacer}>&nbsp;</div>
-          <Typography className={classes.logoText}>connect portal</Typography>
+          <Typography className={classes.logoText}>Connect Portal</Typography>
           <Typography className={classes.tagline}>
             Manage your devices and view your drives
           </Typography>
-          <a href={AuthConfig.GITHUB_REDIRECT_LINK} className={`${classes.logInButton} githubAuth`}>
+          <Typography className={classes.tagline}>
+            Brought to you by Springer Electronics. 
+          </Typography>
+          <a
+            className="flex items-center pl-4 pr-3 py-2 font-medium border border-white rounded-full hover:bg-[rgba(255,255,255,0.1)] active:bg-[rgba(255,255,255,0.2)] transition-colors"
+            href={`https://springerelectronics.com/`}
+          >
+            Visit the Springer Electronics Store
+            <RightArrow className="ml-1 h-4" />
+          </a>
+
+          <a
+            href={AuthConfig.GITHUB_REDIRECT_LINK}
+            className={`${classes.logInButton} githubAuth mt-4`}  // Add margin here
+          >
             <img className={classes.buttonImage} src={AuthGithubIcon} alt="" />
             <Typography className={classes.buttonText}>Sign in with GitHub</Typography>
           </a>
