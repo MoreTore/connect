@@ -33,6 +33,7 @@ function getDefaultLoop(pathname) {
 }
 
 export default {
+  currentView: 'dashboard',
   dongleId: getDongleID(window.location.pathname),
 
   desiredPlaySpeed: 1, // speed set by user
@@ -65,4 +66,5 @@ export default {
   filter: getDefaultFilter(),
   zoom: getZoom(window.location.pathname),
   loop: getDefaultLoop(window.location.pathname),
+  stream: null
 };

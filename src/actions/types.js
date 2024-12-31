@@ -18,6 +18,7 @@ export const ACTION_UPDATE_DEVICE_NETWORK = 'ACTION_UPDATE_DEVICE_NETWORK';
 export const ACTION_PRIME_NAV = 'ACTION_PRIME_NAV';
 export const ACTION_PRIME_SUBSCRIPTION = 'ACTION_PRIME_SUBSCRIPTION';
 export const ACTION_PRIME_SUBSCRIBE_INFO = 'ACTION_PRIME_SUBSCRIBE_INFO';
+export const ACTION_SET_CURRENT_VIEW = 'ACTION_SET_CURRENT_VIEW';
 
 // playback
 export const ACTION_SEEK = 'action_seek';
@@ -30,6 +31,7 @@ export const ACTION_RESET = 'action_reset';
 // segments
 export const ACTION_UPDATE_SEGMENTS = 'update_segments';
 export const ACTION_ROUTES_METADATA = 'routes_metadata';
+export const ACTION_ROUTES_METADATA_ALL = 'ACTION_ROUTES_METADATA_ALL';
 
 // files
 export const ACTION_FILES_URLS = 'files_urls';

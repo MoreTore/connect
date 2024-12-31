@@ -9,13 +9,16 @@ import 'mapbox-gl/src/css/mapbox-gl.css';
 
 import { devices as Devices } from '@moretore/api';
 
+import AdminView from './AdminView';
+import LiveView from './LiveView';
+
 import AppHeader from './AppHeader';
 import Dashboard from './Dashboard';
 import IosPwaPopup from './IosPwaPopup';
 import AppDrawer from './AppDrawer';
 import PullDownReload from './utils/PullDownReload';
 
-import { analyticsEvent, selectDevice, updateDevice } from '../actions';
+import { analyticsEvent, selectDevice, updateDevice, setCurrentView } from '../actions';
 import init from '../actions/startup';
 import Colors from '../colors';
 import { play, pause } from '../timeline/playback';
@@ -71,11 +74,29 @@ class ExplorerApp extends Component {
       pairError: null,
       pairDongleId: null,
       windowWidth: window.innerWidth,
+      currentView: 'dashboard',
     };
 
     this.handleDrawerStateChanged = this.handleDrawerStateChanged.bind(this);
     this.updateHeaderRef = this.updateHeaderRef.bind(this);
     this.closePair = this.closePair.bind(this);
+    this.switchToAdminView = this.switchToAdminView.bind(this);
+    this.switchToLiveView = this.switchToLiveView.bind(this);
+    this.switchToDashboard = this.switchToDashboard.bind(this);
+  }
+
+  // Method to switch to AdminView
+  switchToAdminView() {
+    this.setState({ currentView: 'admin' });
+  }
+
+  switchToLiveView() {
+    this.setState({ currentView: 'live' });
+  }
+
+  // Method to switch back to Dashboard
+  switchToDashboard() {
+    this.setState({ currentView: 'dashboard' });
   }
 
   async componentDidMount() {
@@ -172,9 +193,9 @@ class ExplorerApp extends Component {
   }
 
   render() {
-    const { classes, zoom, devices, dongleId } = this.props;
+    const { dispatch, classes, zoom, devices, dongleId, profile } = this.props;
     const { drawerIsOpen, pairLoading, pairError, pairDongleId, windowWidth } = this.state;
-
+    const { currentView } = this.props;  // Get current view from state
     const noDevicesUpsell = (devices?.length === 0 && !dongleId);
     const isLarge = noDevicesUpsell || windowWidth > 1080;
 
@@ -215,10 +236,48 @@ class ExplorerApp extends Component {
           handleDrawerStateChanged={this.handleDrawerStateChanged}
           style={ drawerStyles }
         />
-        <div className={ classes.window } style={ containerStyles }>
-          { noDevicesUpsell
+        <div className={classes.window} style={containerStyles}>
+          {/* Buttons Container */}
+          <div className={classes.buttonsContainer}>
+            {profile && profile.superuser && currentView !== 'admin' && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => dispatch(setCurrentView('admin'))}
+                className={classes.adminButton}
+              >
+                Admin Dashboard
+              </Button>
+            )}
+
+            {currentView !== 'dashboard' && (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => dispatch(setCurrentView('dashboard'))}
+                className={classes.backButton}
+              >
+                Back to Dashboard
+              </Button>
+            )}
+
+          </div>
+
+          {/* Content Container */}
+          <div className={classes.contentContainer}>
+          {noDevicesUpsell
             ? <NoDeviceUpsell />
-            : (zoom ? <DriveView /> : <Dashboard />)}
+            : (
+              // Include the condition to render AdminView
+              currentView === 'admin'
+                ? <AdminView />
+                : ( currentView === 'live' 
+                  ? <LiveView />
+                  : (zoom ? <DriveView /> : <Dashboard />)
+                  )
+              )
+            }
+          </div>
         </div>
         <IosPwaPopup />
         <Modal open={ Boolean(pairLoading || pairError || pairDongleId) } onClose={ this.closePair }>
@@ -249,6 +308,8 @@ const stateToProps = Obstruction({
   pathname: 'router.location.pathname',
   dongleId: 'dongleId',
   devices: 'devices',
+  profile: 'profile',
+  currentView: 'currentView',
 });
 
 export default connect(stateToProps)(withStyles(styles)(ExplorerApp));

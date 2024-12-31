@@ -247,6 +247,70 @@ export function fetchDeviceNetworkStatus(dongleId) {
   };
 }
 
+export function checkAllRoutesData(dongleIds) {
+  return (dispatch, getState) => {
+    if (!dongleIds || dongleIds.length === 0) {
+      return;
+    }
+
+    const state = getState();
+    const fetchRange = getSegmentFetchRange(state); // Assuming a common fetch range for simplicity
+    fetchRange.start = 0;
+    // Create an array of promises to fetch routes for each dongleId
+    const routesRequests = dongleIds.map((dongleId) => {
+      return Drives.getRoutesSegments(dongleId, fetchRange.start, fetchRange.end)
+        .then((routesData) => {
+          // Process routesData for this device
+          const routes = routesData.map((r) => {
+            let startTime = r.segment_start_times[0];
+            let endTime = r.segment_end_times[r.segment_end_times.length - 1];
+
+            // Adjust segment boundary times if necessary (same logic as before)
+            if ((Math.abs(r.start_time_utc_millis - startTime) > 24 * 60 * 60 * 1000)
+              && (Math.abs(r.end_time_utc_millis - endTime) < 10 * 1000)) {
+              console.log('fixing %s', r.fullname);
+              startTime = r.start_time_utc_millis;
+              endTime = r.end_time_utc_millis;
+              r.segment_start_times = r.segment_numbers.map((x) => startTime + (x * 60 * 1000));
+              r.segment_end_times = r.segment_numbers.map((x) => Math.min(startTime + ((x + 1) * 60 * 1000), endTime));
+            }
+
+            return {
+              ...r,
+              dongleId, // Add dongleId to identify which device this route belongs to
+              url: r.url.replace('chffrprivate.blob.core.windows.net', 'chffrprivate.azureedge.net'),
+              offset: Math.round(startTime) - state.filter.start,
+              duration: endTime - startTime,
+              start_time_utc_millis: startTime,
+              end_time_utc_millis: endTime,
+              segment_offsets: r.segment_start_times.map((x) => x - state.filter.start),
+            };
+          });
+
+          return routes;
+        })
+        .catch((err) => {
+          console.error(`Failure fetching routes metadata for dongleId ${dongleId}`, err);
+          // Return an empty array in case of error to prevent breaking Promise.all
+          return [];
+        });
+    });
+
+    // Wait for all routes data to be fetched
+    Promise.all(routesRequests).then((allRoutesArrays) => {
+      // Flatten the array of arrays into a single array of routes
+      const allRoutes = allRoutesArrays.flat();
+
+      dispatch({
+        type: Types.ACTION_ROUTES_METADATA_ALL,
+        start: fetchRange.start,
+        end: fetchRange.end,
+        allRoutes,
+      });
+    });
+  };
+}
+
 export function checkRoutesData() {
   return (dispatch, getState) => {
     let state = getState();
@@ -387,5 +451,12 @@ export function updateRoute(fullname, route) {
     type: Types.ACTION_UPDATE_ROUTE,
     fullname,
     route,
+  };
+}
+
+export function setCurrentView(view) {
+  return {
+    type: Types.ACTION_SET_CURRENT_VIEW,
+    payload: view,
   };
 }

@@ -18,7 +18,7 @@ const DashboardLoading = () => (
   </Grid>
 );
 
-const Dashboard = ({ primeNav, device, dongleId }) => {
+const Dashboard = ({ primeNav, device, dongleId, profile}) => {
   if (!device || !dongleId) {
     return <DashboardLoading />;
   }
@@ -44,6 +44,7 @@ const stateToProps = Obstruction({
   dongleId: 'dongleId',
   primeNav: 'primeNav',
   device: 'device',
+  profile: 'profile',
 });
 
 export default connect(stateToProps)(Dashboard);

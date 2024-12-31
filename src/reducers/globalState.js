@@ -324,6 +324,15 @@ export default function reducer(_state, action) {
         end: action.end,
       };
       break;
+    case Types.ACTION_ROUTES_METADATA_ALL:
+      state.allRoutes = action.allRoutes;
+      state.routesMeta = {
+        start: action.start,
+        end: action.end,
+      };
+      break;
+    case Types.ACTION_SET_CURRENT_VIEW:
+      return { ...state, currentView: action.payload };
     default:
       return state;
   }

@@ -405,7 +405,7 @@ class Navigation extends Component {
   }
 
   async getDeviceLastLocation() {
-    const { dongleId, device } = this.props;
+    const { dongleId, device, profile } = this.props;
     if (device.shared) {
       return;
     }

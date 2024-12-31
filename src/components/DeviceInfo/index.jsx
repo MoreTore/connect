@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import { withStyles, Typography, Button, CircularProgress, Popper, Tooltip } from '@material-ui/core';
 
 import { athena as Athena, devices as Devices } from '@moretore/api';
-import { analyticsEvent } from '../../actions';
+import { analyticsEvent, setCurrentView } from '../../actions';
 import Colors from '../../colors';
 import { deviceNamePretty, deviceIsOnline } from '../../utils';
 import { isMetric, KM_PER_MI } from '../../utils/conversions';
@@ -170,15 +170,18 @@ class DeviceInfo extends Component {
       deviceStats: {},
       carHealth: {},
       snapshot: {},
+      fleetManager: {},
       windowWidth: window.innerWidth,
     };
 
     this.snapshotButtonRef = React.createRef();
+    this.fleetManagerButtonRef = React.createRef();
 
     this.onResize = this.onResize.bind(this);
     this.onVisible = this.onVisible.bind(this);
     this.fetchDeviceInfo = this.fetchDeviceInfo.bind(this);
     this.fetchDeviceCarHealth = this.fetchDeviceCarHealth.bind(this);
+    this.openManagerTab = this.openManagerTab.bind(this);
     this.takeSnapshot = this.takeSnapshot.bind(this);
     this.snapshotType = this.snapshotType.bind(this);
     this.renderButtons = this.renderButtons.bind(this);
@@ -198,6 +201,7 @@ class DeviceInfo extends Component {
         deviceStats: {},
         carHealth: {},
         snapshot: {},
+        fleetManager: {},
         windowWidth: window.innerWidth,
       });
     }
@@ -216,6 +220,7 @@ class DeviceInfo extends Component {
     if (!device.shared) {
       this.fetchDeviceInfo();
       this.fetchDeviceCarHealth();
+      this.fetchManagerURL();
     }
   }
 
@@ -283,7 +288,7 @@ class DeviceInfo extends Component {
         resp = await Athena.postJsonRpcPayload(dongleId, payload);
       }
       if (resp.result && !resp.result.jpegBack && !resp.result.jpegFront) {
-        throw new Error('unable to fetch snapshot');
+        throw new Error('unable to get device IP address');
       }
       if (dongleId === this.props.dongleId) {
         this.setState({ snapshot: resp });
@@ -308,6 +313,49 @@ class DeviceInfo extends Component {
   snapshotType(showFront) {
     const { snapshot } = this.state;
     this.setState({ snapshot: { ...snapshot, showFront } });
+  }
+
+  async fetchManagerURL() {
+    const { dongleId } = this.props;
+    const { fleetManager } = this.state;
+    this.setState({ fleetManager: { ...fleetManager, error: null, fetching: true } });
+    try {
+      // Payload to request the manager URL
+      const payload = {
+        method: 'getManagerURL',
+        jsonrpc: '2.0',
+        id: 0,
+      };
+  
+      // Send the request
+      const resp = await Athena.postJsonRpcPayload(dongleId, payload);
+  
+      // Check if the response contains the URL and return it
+      if (resp.result && resp.result.url) {
+        this.setState({ fleetManager: { url: resp.result.url } });
+        return resp.result.url;
+      } else {
+        this.setState({ fleetManager: { url: null } });
+        throw new Error('Manager URL not found in response');
+      }
+    } catch (err) {
+      console.error('Error fetching manager URL:', err.message);
+      Sentry.captureException(err, { fingerprint: 'fetch_manager_url_error' });
+      this.setState({ fleetManager: { error, url: null } });
+      throw err;
+    }
+  }
+
+  async openManagerTab() {
+    try {
+      // Call getManagerURL to fetch the URL
+      const url = await this.fetchManagerURL();
+      if (url) {
+        window.open(url, '_blank'); // Open the URL in a new tab
+      }
+    } catch (err) {
+      console.error('Failed to open manager tab:', err.message);
+    }
   }
 
   render() {
@@ -425,8 +473,8 @@ class DeviceInfo extends Component {
   }
 
   renderButtons() {
-    const { classes, device } = this.props;
-    const { snapshot, carHealth, windowWidth } = this.state;
+    const { dispatch, classes, device } = this.props;
+    const { snapshot, carHealth, fleetManager, windowWidth } = this.state;
 
     let batteryVoltage;
     let batteryBackground = Colors.grey400;
@@ -459,15 +507,15 @@ class DeviceInfo extends Component {
     return (
       <>
         <div
-          className={ classes.carBattery }
+          className={classes.carBattery}
           style={{ backgroundColor: batteryBackground }}
         >
-          { deviceIsOnline(device)
+          {deviceIsOnline(device)
             ? (
               <Typography>
-                { `${windowWidth >= 520 ? 'car ' : ''
+                {`${windowWidth >= 520 ? 'car ' : ''
                 }battery: ${
-                  batteryVoltage ? `${batteryVoltage.toFixed(1)}\u00a0V` : 'N/A'}` }
+                  batteryVoltage ? `${batteryVoltage.toFixed(1)}\u00a0V` : 'N/A'}`}
               </Typography>
             )
             : (
@@ -480,23 +528,45 @@ class DeviceInfo extends Component {
               </Tooltip>
             )}
         </div>
-        <Button
-          ref={ this.snapshotButtonRef }
-          classes={{ root: `${classes.button} ${actionButtonClass} ${buttonOffline}` }}
-          onClick={ this.takeSnapshot }
-          disabled={ Boolean(snapshot.fetching || !deviceIsOnline(device)) }
-        >
-          { snapshot.fetching
-            ? <CircularProgress size={ 19 } />
-            : 'take snapshot'}
-        </Button>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'start' }}>
+         
+          <Button
+            ref={this.fleetManagerButtonRef}
+            classes={{ root: `${classes.button} ${actionButtonClass} ${buttonOffline}` }}
+            onClick={this.openManagerTab}
+            disabled={Boolean(fleetManager.fetching || !deviceIsOnline(device) || (fleetManager.url == null))}
+          >
+            {fleetManager.fetching
+              ? <CircularProgress size={19} />
+              : 'fleet manager'}
+          </Button>
+
+          <Button
+            classes={{ root: `${classes.button} ${actionButtonClass} ${buttonOffline}` }}
+            onClick={() => dispatch(setCurrentView('live'))} // Dispatch action
+            disabled={Boolean(!deviceIsOnline(device))}
+          >
+            live view
+          </Button>
+          
+          <Button
+            ref={this.snapshotButtonRef}
+            classes={{ root: `${classes.button} ${actionButtonClass} ${buttonOffline}` }}
+            onClick={this.takeSnapshot}
+            disabled={Boolean(snapshot.fetching || !deviceIsOnline(device))}
+          >
+            {snapshot.fetching
+              ? <CircularProgress size={19} />
+              : 'take snapshot'}
+          </Button>
+        </div>
         <Popper
-          className={ classes.popover }
-          open={ Boolean(error) }
+          className={classes.popover}
+          open={Boolean(error)}
           placement="bottom"
-          anchorEl={ this.snapshotButtonRef.current }
+          anchorEl={this.snapshotButtonRef?.current}
         >
-          <Typography>{ error }</Typography>
+          <Typography>{error}</Typography>
         </Popper>
       </>
     );

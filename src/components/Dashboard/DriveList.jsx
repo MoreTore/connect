@@ -22,7 +22,7 @@ const styles = () => ({
 });
 
 const DriveList = (props) => {
-  const { dispatch, classes, device, routes } = props;
+  const { dispatch, classes, device, routes} = props;
 
   let content;
   if (!routes || routes.length === 0) {
