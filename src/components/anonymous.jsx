@@ -142,13 +142,13 @@ class AnonymousLanding extends Component {
             Manage your devices and view your drives
           </Typography>
           <Typography className={classes.tagline}>
-            Brought to you by Springer Electronics. 
+            Brought to you by Konik AI. 
           </Typography>
           <a
             className="flex items-center pl-4 pr-3 py-2 font-medium border border-white rounded-full hover:bg-[rgba(255,255,255,0.1)] active:bg-[rgba(255,255,255,0.2)] transition-colors"
-            href={`https://springerelectronics.com/`}
+            href={`https://konik.ai/`}
           >
-            Visit the Springer Electronics Store
+            Visit the Konik Store
             <RightArrow className="ml-1 h-4" />
           </a>
 

@@ -53,7 +53,7 @@ const AccountMenu = ({ profile, open, anchorEl, onClose, ...rest }) => {
       <MenuItem
         className="py-3 px-4"
         component="a"
-        href="https://useradmin.springerelectronics.com/"
+        href="https://useradmin.konik.ai/"
         target="_blank"
       >
         Manage Account

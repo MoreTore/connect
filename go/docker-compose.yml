@@ -7,9 +7,9 @@ services:
     ports:
       - "80:80"
     environment:
-      COMMA_URL_ROOT: https://api.springerelectronics.com/
-      ATHENA_URL_ROOT: https://api.springerelectronics.com/ws/
+      COMMA_URL_ROOT: https://api.konik.ai/
+      ATHENA_URL_ROOT: https://api.konik.ai/ws/
       BILLING_URL_ROOT: https://billing.comma.ai/
-      USERADMIN_URL_ROOT: https://useradmin.springerelectronics.com/
+      USERADMIN_URL_ROOT: https://useradmin.konik.ai/
 
       SENTRY_ENV: connect-development
