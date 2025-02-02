@@ -137,7 +137,7 @@ class AnonymousLanding extends Component {
             <img alt="comma" src="/images/comma-white.png" className={classes.logoImg} />
           </div>
           <div className={classes.logoSpacer}>&nbsp;</div>
-          <Typography className={classes.logoText}>Connect Portal</Typography>
+          <Typography className={classes.logoText}>Konik Stables</Typography>
           <Typography className={classes.tagline}>
             Manage your devices and view your drives
           </Typography>
