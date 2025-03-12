@@ -1,5 +1,5 @@
 {
-  "name": "connect",
+  "name": "stable",
   "version": "0.8.0",
   "scripts": {
     "start": "vite",

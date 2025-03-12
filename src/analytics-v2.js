@@ -3,7 +3,7 @@ import { onCLS, onFCP, onFID, onLCP, onTTFB } from 'web-vitals';
 import { getCommaAccessToken } from '@moretore/my-comma-auth/storage';
 
 const ATTRIBUTES = {
-  app: 'connect',
+  app: 'stable',
   gitCommit: import.meta.env.VITE_APP_GIT_SHA || 'dev',
   environment: import.meta.env.MODE || 'unknown',
   ci: new URLSearchParams(window.location.search).get('ci') || false,
