@@ -108,7 +108,7 @@ const AppHeader = ({
               href={`/${dongleId}`}
               onClick={filterRegularClick(() => dispatch(selectDevice(dongleId)))}
             >
-              <Typography className={classes.logoText}>connect</Typography>
+              <Typography className={classes.logoText}>konik stable</Typography>
             </a>
           </div>
           <div className="flex order-4 w-full justify-center sm:order-none sm:w-auto">

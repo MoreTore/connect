@@ -323,7 +323,7 @@ class Media extends Component {
   async shareCurrentRoute() {
     try {
       await navigator.share({
-        title: 'comma connect',
+        title: 'konik stable',
         url: window.location.href,
       });
     } catch (err) {
