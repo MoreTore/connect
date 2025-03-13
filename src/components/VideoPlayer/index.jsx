@@ -30,6 +30,9 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
   // Add a timestamp for update throttling to prevent flickering
   const lastUpdateRef = useRef(0);
 
+  // Add a reference for the control sending interval
+  const controlIntervalRef = useRef(null);
+
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
@@ -226,7 +229,34 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
     setIsPlaying(!isPlaying);
   };
 
-  // Virtual joystick handlers
+  // Add this new effect to ensure we send commands at 100Hz when in fullscreen mode
+  useEffect(() => {
+    // Only set up the interval when in fullscreen with virtual controls enabled and handleJoystickTouch is available
+    if (isFullscreen && virtualControlsEnabled && handleJoystickTouch) {
+      // Clear any existing interval
+      if (controlIntervalRef.current) {
+        clearInterval(controlIntervalRef.current);
+      }
+      
+      // Set up a 100Hz interval to send control commands
+      controlIntervalRef.current = setInterval(() => {
+        // Send the current steering and throttle values at 100Hz
+        // Apply steering inversion if enabled
+        const finalSteering = useInvertSteering ? -localSteering : localSteering;
+        handleJoystickTouch(finalSteering, localThrottle);
+      }, 10); // 10ms = 100Hz
+      
+      return () => {
+        if (controlIntervalRef.current) {
+          clearInterval(controlIntervalRef.current);
+          controlIntervalRef.current = null;
+        }
+      };
+    }
+  }, [isFullscreen, virtualControlsEnabled, handleJoystickTouch, localSteering, localThrottle, useInvertSteering]);
+
+  // Modify the joystick handlers to update local values without conditional sending
+  
   const handleJoystickTouchStart = (e) => {
     e.preventDefault();
     if (!joystickRef.current) return;
@@ -261,12 +291,8 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
     setLocalThrottle(newThrottle);
     setJoystickActive(true);
     
-    // Send to parent if needed
-    if (handleJoystickTouch) {
-      // Apply steering inversion if enabled
-      const finalSteering = useInvertSteering ? -newSteering : newSteering;
-      handleJoystickTouch(finalSteering, newThrottle);
-    }
+    // Note: We don't send control commands here directly anymore
+    // The 100Hz interval will handle sending the commands
   };
   
   const handleJoystickTouchMove = (e) => {
@@ -303,12 +329,8 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
     setLocalSteering(newSteering);
     setLocalThrottle(newThrottle);
     
-    // Send to parent if needed
-    if (handleJoystickTouch) {
-      // Apply steering inversion if enabled
-      const finalSteering = useInvertSteering ? -newSteering : newSteering;
-      handleJoystickTouch(finalSteering, newThrottle);
-    }
+    // Note: We don't send control commands here directly anymore
+    // The 100Hz interval will handle sending the commands
   };
   
   const handleJoystickTouchEnd = (e) => {
@@ -331,10 +353,8 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
       setLocalThrottle(0);
       setJoystickActive(false);
       
-      // Send to parent if needed
-      if (handleJoystickTouch) {
-        handleJoystickTouch(0, 0);
-      }
+      // Note: We don't send control commands here directly anymore
+      // The 100Hz interval will handle sending the zero values
     }
   };
 
@@ -369,12 +389,8 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
     setLocalThrottle(newThrottle);
     setJoystickActive(true);
     
-    // Send to parent if needed
-    if (handleJoystickTouch) {
-      // Apply steering inversion if enabled
-      const finalSteering = useInvertSteering ? -newSteering : newSteering;
-      handleJoystickTouch(finalSteering, newThrottle);
-    }
+    // Note: We don't send control commands here directly anymore
+    // The 100Hz interval will handle sending the commands
   };
   
   const handleJoystickMouseMove = (e) => {
@@ -399,12 +415,8 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
     setLocalSteering(newSteering);
     setLocalThrottle(newThrottle);
     
-    // Send to parent if needed
-    if (handleJoystickTouch) {
-      // Apply steering inversion if enabled
-      const finalSteering = useInvertSteering ? -newSteering : newSteering;
-      handleJoystickTouch(finalSteering, newThrottle);
-    }
+    // Note: We don't send control commands here directly anymore
+    // The 100Hz interval will handle sending the commands
   };
   
   const handleJoystickMouseUp = (e) => {
@@ -416,10 +428,8 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
     setLocalThrottle(0);
     setJoystickActive(false);
     
-    // Send to parent if needed
-    if (handleJoystickTouch) {
-      handleJoystickTouch(0, 0);
-    }
+    // Note: We don't send control commands here directly anymore
+    // The 100Hz interval will handle sending the zero values
   };
 
   // Get controller values from props or use defaults
@@ -472,10 +482,23 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
     };
   }, [setVideoFullscreen]);
 
-  return (
-    <div 
+  // Don't forget to clean up interval on component unmount
+  useEffect(() => {
+    return () => {
+      if (controlIntervalRef.current) {
+        clearInterval(controlIntervalRef.current);
+        controlIntervalRef.current = null;
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+    return (
+      <div
       ref={containerRef}
-      style={{
+        style={{
         position: isFullscreen ? 'fixed' : 'relative',
         top: isFullscreen ? 0 : 'auto',
         left: isFullscreen ? 0 : 'auto',
@@ -514,12 +537,12 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
         </div>
       )}
 
-      <video
+        <video
         ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        style={{
+          autoPlay
+          playsInline
+          muted
+          style={{
           width: '100%',
           height: isFullscreen ? '100%' : 'auto',
           maxHeight: isFullscreen ? '100vh' : '500px',
@@ -823,7 +846,7 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
               }}
             >
               {showControllerOverlay ? "Hide Controls" : "Show Controls"}
-            </Button>
+          </Button>
           )}
         </div>
 
@@ -833,9 +856,9 @@ const VideoPlayer = ({ stream, paused, togglePlayPause, trackType, controllerSta
         >
           {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
         </IconButton>
+        </div>
       </div>
-    </div>
-  );
+    );
 };
 
 export default VideoPlayer;
