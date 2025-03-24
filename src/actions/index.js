@@ -255,7 +255,6 @@ export function checkAllRoutesData(dongleIds) {
 
     const state = getState();
     const fetchRange = getSegmentFetchRange(state); // Assuming a common fetch range for simplicity
-    fetchRange.start = 0;
     // Create an array of promises to fetch routes for each dongleId
     const routesRequests = dongleIds.map((dongleId) => {
       return Drives.getRoutesSegments(dongleId, fetchRange.start, fetchRange.end)

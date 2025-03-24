@@ -237,32 +237,6 @@ class ExplorerApp extends Component {
           style={ drawerStyles }
         />
         <div className={classes.window} style={containerStyles}>
-          {/* Buttons Container */}
-          <div className={classes.buttonsContainer}>
-            {profile && profile.superuser && currentView !== 'admin' && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => dispatch(setCurrentView('admin'))}
-                className={classes.adminButton}
-              >
-                Admin Dashboard
-              </Button>
-            )}
-
-            {currentView !== 'dashboard' && (
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => dispatch(setCurrentView('dashboard'))}
-                className={classes.backButton}
-              >
-                Back to Dashboard
-              </Button>
-            )}
-
-          </div>
-
           {/* Content Container */}
           <div className={classes.contentContainer}>
           {noDevicesUpsell

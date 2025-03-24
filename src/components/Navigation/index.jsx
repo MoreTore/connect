@@ -294,6 +294,13 @@ class Navigation extends Component {
       windowWidth: window.innerWidth,
     };
 
+    this.activePointers = new Set();
+    this.longPressTimer = null;
+    this.longPressStart = null;
+    this.longPressZoom = null;
+    this.cumulativeMovement = 0;
+    this.lastPointerPosition = null;
+
     this.mapContainerRef = React.createRef();
     this.searchInputRef = React.createRef();
     this.searchSelectBoxRef = React.createRef();
@@ -342,6 +349,12 @@ class Navigation extends Component {
     this.mounted = true;
     this.checkWebGLSupport();
     this.componentDidUpdate({}, {});
+    if (this.mapContainerRef.current) {
+      this.mapContainerRef.current.addEventListener('pointerdown', this.handlePointerDown);
+      this.mapContainerRef.current.addEventListener('pointermove', this.handlePointerMove);
+      this.mapContainerRef.current.addEventListener('pointerup', this.handlePointerUp);
+      this.mapContainerRef.current.addEventListener('pointercancel', this.handlePointerCancel);
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -699,7 +712,7 @@ class Navigation extends Component {
     const { noFly, geoLocateCoords, search, searchSelect, windowWidth, viewport } = this.state;
     const carLocation = this.getCarLocation();
 
-    if (noFly) {
+    if (noFly || (searchSelect && searchSelect.resultType === 'manual')) {
       return;
     }
 
@@ -923,6 +936,9 @@ class Navigation extends Component {
 
   viewportChange(viewport, interactionState) {
     const { search, searchSelect, searchLooking } = this.state;
+    if (this.longPressTimer && (interactionState.isZooming || interactionState.isRotating)) {
+      this.resetLongPressState();
+    }
     this.setState({ viewport });
 
     if (interactionState.isPanning || interactionState.isZooming || interactionState.isRotating) {
@@ -972,6 +988,125 @@ class Navigation extends Component {
     }
   }
 
+  handlePointerDown = (event) => {
+    // Add this pointer to the active set
+    this.resetLongPressState();
+    this.activePointers.add(event.pointerId);
+    if (this.activePointers.size > 1) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = null;
+      return;
+    }
+    const rect = this.mapContainerRef.current.getBoundingClientRect();
+    const startX = event.clientX - rect.left;
+    const startY = event.clientY - rect.top;
+    // Save the initial long press data
+    this.longPressStart = { x: startX, y: startY, pointerId: event.pointerId, time: Date.now() };
+    this.longPressZoom = this.state.viewport.zoom;
+    // Reset cumulative movement and record initial pointer position
+    this.cumulativeMovement = 0;
+    this.lastPointerPosition = { x: startX, y: startY };
+  
+    // Start the long press timer (e.g., 1000ms)
+    this.longPressTimer = setTimeout(() => {
+      this.triggerLongPress();
+    }, 1000);
+  };
+  
+  // Called when the pointer moves
+  handlePointerMove = (event) => {
+    if (!this.longPressStart) return;
+
+    // Cancel if more than one pointer is active (e.g., pinch-to-zoom)
+    if (this.activePointers.size > 1) {
+      this.resetLongPressState();
+      return;
+    }
+
+    const rect = this.mapContainerRef.current.getBoundingClientRect();
+    const currentX = event.clientX - rect.left;
+    const currentY = event.clientY - rect.top;
+    // Calculate movement since the last event
+    const deltaX = currentX - this.lastPointerPosition.x;
+    const deltaY = currentY - this.lastPointerPosition.y;
+    const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    // Accumulate movement
+    this.cumulativeMovement += moveDistance;
+    // Update last pointer position
+    this.lastPointerPosition = { x: currentX, y: currentY };
+    
+    // If cumulative movement exceeds threshold (e.g., 10px), cancel long press
+    if (this.cumulativeMovement > 10) {
+      this.resetLongPressState();
+    }
+  };
+  
+  // Called when the pointer is released
+  handlePointerUp = (event) => {
+    this.resetLongPressState();
+  };
+  
+  // Called when the pointer is canceled (if supported)
+  handlePointerCancel = (event) => {
+    this.resetLongPressState();
+  };
+  
+  // Trigger the long press if conditions are met
+  triggerLongPress = () => {
+    // Verify the initiating pointer is still active.
+    if (!this.longPressStart || !this.activePointers.has(this.longPressStart.pointerId)) {
+      this.resetLongPressState();
+      return;
+    }
+  
+    // Cancel if the zoom level has changed significantly.
+    if (Math.abs(this.state.viewport.zoom - this.longPressZoom) > 0.1) {
+      this.resetLongPressState();
+      return;
+    }
+  
+    const { x, y } = this.longPressStart;
+    const { viewport } = this.state;
+    const wp = new WebMercatorViewport(viewport);
+    const [lng, lat] = wp.unproject([x, y]);
+  
+    // Now, perform a reverse geocode search for the address or name.
+    reverseLookup([lng, lat], true)
+      .then((location) => {
+        // Use the reverse geocoded result.
+        const destination = {
+          resultType: 'manual',
+          position: { lat, lng },
+          title: location.place || "Selected Location",
+          address: { label: location.details || "Selected Location" },
+        };
+        this.resetLongPressState();
+        this.onSearchSelect(destination, 'longpress');
+      })
+      .catch((err) => {
+        console.error("Reverse lookup failed:", err);
+        // Fallback in case of an error.
+        const destination = {
+          resultType: 'manual',
+          position: { lat, lng },
+          title: "Selected Location",
+          address: { label: "Selected Location" },
+        };
+        this.resetLongPressState();
+        this.onSearchSelect(destination, 'longpress');
+      });
+  };
+
+  resetLongPressState = () => {
+    clearTimeout(this.longPressTimer);
+    this.longPressTimer = null;
+    this.longPressStart = null;
+    this.cumulativeMovement = 0;
+    this.lastPointerPosition = null;
+    this.activePointers.clear();
+  };
+
+
   render() {
     const { classes, device, hasNav } = this.props;
     const { mapError, hasFocus, search, searchLooking, searchSelect, favoriteLocations, viewport,
@@ -993,6 +1128,10 @@ class Navigation extends Component {
     return (
       <div
         ref={this.onContainerRef}
+        onPointerDown={this.handlePointerDown}
+        onPointerMove={this.handlePointerMove}
+        onPointerUp={this.handlePointerUp}
+        onPointerCancel={this.handlePointerCancel}
         className={classes.mapContainer}
         style={{ height: (hasFocus && hasNav) ? '60vh' : 200 }}
       >

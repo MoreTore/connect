@@ -11,10 +11,11 @@ import ResizeHandler from '../ResizeHandler';
 import AnsiToHtml from 'ansi-to-html';
 import { FixedSizeList } from 'react-window';
 import Joystick from './Joystick';
+import { setCurrentView } from '../../actions';
 
 const converter = new AnsiToHtml({ bg: "#2a2a2a", fg: "#f0f0f0" });
 
-function LiveViewControl({ state, handleConnectionToggle, sendCaptureTmux }) {
+function LiveViewControl({ state, handleConnectionToggle, sendCaptureTmux, dispatch }) {
   return (
     <div
       style={{
@@ -25,12 +26,17 @@ function LiveViewControl({ state, handleConnectionToggle, sendCaptureTmux }) {
         marginBottom: "20px",
       }}
     >
-      <Typography
-        variant="h2" // Make the text bigger
-        style={{ color: Colors.white }}
-      >
-        Live View
-      </Typography>
+      <Button
+            style={{
+              backgroundColor: Colors.red400,
+              color: Colors.white,
+              textTransform: "none",
+            }}
+            onClick={() => dispatch(setCurrentView('dashboard'))}
+            disabled={false}
+          >
+            Back
+      </Button>
       <Button
         variant="contained"
         color={state.dataChannelReady ? "primary" : "secondary"}
@@ -580,7 +586,7 @@ class LiveView extends Component {
     return (
       <div style={{ padding: "20px", backgroundColor: Colors.grey900, minHeight: "100vh" }}>
   
-        {<LiveViewControl state={this.state} handleConnectionToggle={this.handleConnectionToggle} sendCaptureTmux={this.sendCaptureTmux}/>}
+        {<LiveViewControl state={this.state} handleConnectionToggle={this.handleConnectionToggle} sendCaptureTmux={this.sendCaptureTmux} dispatch={this.props.dispatch}/>}
         {loading && ( <Typography style={{ textAlign: "center", color: Colors.white }}>Loading...</Typography> )}
         {status && ( <Typography style={{ color: Colors.blue500, textAlign: "center" }}>{status}</Typography> )}
         {error && ( <Typography style={{ color: Colors.red500, textAlign: "center" }}>{error}</Typography> )}

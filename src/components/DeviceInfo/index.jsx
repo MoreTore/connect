@@ -92,23 +92,37 @@ const styles = (theme) => ({
   carBattery: {
     padding: '5px 16px',
     borderRadius: 15,
-    margin: '0 10px',
     textAlign: 'center',
+    minWidth: 150,
     '& p': {
       fontSize: 14,
       fontWeight: 500,
       lineHeight: '1.4em',
     },
   },
-  actionButton: {
-    minWidth: 130,
-    padding: '5px 16px',
-    borderRadius: 15,
-  },
-  actionButtonSmall: {
-    minWidth: 90,
+  carBatterySmall: {
     padding: '5px 10px',
     borderRadius: 15,
+    textAlign: 'center',
+    minWidth: 110,
+    '& p': {
+      fontSize: 10,
+      fontWeight: 500,
+      lineHeight: '1.4em',
+    },
+  },
+
+  actionButton: {
+    minWidth: 150,
+    padding: '5px 16px',
+    borderRadius: 15,
+    fontSize: 14,
+  },
+  actionButtonSmall: {
+    minWidth: 110,
+    padding: '5px 10px',
+    borderRadius: 15,
+    fontSize: 10,
   },
   snapshotContainer: {
     borderBottom: `1px solid ${Colors.white10}`,
@@ -487,6 +501,9 @@ class DeviceInfo extends Component {
     const actionButtonClass = windowWidth >= 520
       ? classes.actionButton
       : classes.actionButtonSmall;
+    const carBatteryClass = windowWidth >= 520
+      ? classes.carBattery
+      : classes.carBatterySmall;
     const buttonOffline = deviceIsOnline(device) ? '' : classes.buttonOffline;
 
     let error = null;
@@ -506,39 +523,51 @@ class DeviceInfo extends Component {
 
     return (
       <>
-        <div
-          className={classes.carBattery}
-          style={{ backgroundColor: batteryBackground }}
-        >
-          {deviceIsOnline(device)
-            ? (
-              <Typography>
-                {`${windowWidth >= 520 ? 'car ' : ''
-                }battery: ${
-                  batteryVoltage ? `${batteryVoltage.toFixed(1)}\u00a0V` : 'N/A'}`}
-              </Typography>
-            )
-            : (
-              <Tooltip
-                classes={{ tooltip: classes.popover }}
-                title={pingTooltip}
-                placement="bottom"
-              >
-                <Typography>device offline</Typography>
-              </Tooltip>
-            )}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'start' }}>
-         
-          <Button
-            ref={this.fleetManagerButtonRef}
-            classes={{ root: `${classes.button} ${actionButtonClass} ${buttonOffline}` }}
-            onClick={this.openManagerTab}
-            disabled={Boolean(fleetManager.fetching || !deviceIsOnline(device) || (fleetManager.url == null))}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'row', 
+          flexWrap: 'wrap',
+          gap: '10px', 
+          alignItems: 'center',
+          width: '100%' 
+        }}>
+          <div
+            className={carBatteryClass}
+            style={{ backgroundColor: batteryBackground }}
           >
-            {fleetManager.fetching
-              ? <CircularProgress size={19} />
-              : 'fleet manager'}
+            {deviceIsOnline(device)
+              ? (
+                <Typography>
+                  {`car battery: ${batteryVoltage ? `${batteryVoltage.toFixed(1)}\u00a0V` : 'N/A'}`}
+                </Typography>
+              )
+              : (
+                <Tooltip
+                  classes={{ tooltip: classes.popover }}
+                  title={pingTooltip}
+                  placement="bottom"
+                >
+                  <Typography>device offline</Typography>
+                </Tooltip>
+              )}
+          </div>
+          {fleetManager.url && (
+            <Button
+              ref={this.fleetManagerButtonRef}
+              classes={{ root: `${classes.button} ${actionButtonClass} ${buttonOffline}` }}
+              onClick={this.openManagerTab}
+              disabled={false}
+            >
+              fleet manager
+            </Button>
+          )}
+
+          <Button
+            classes={{ root: `${classes.button} ${actionButtonClass}` }}
+            onClick={() => dispatch(setCurrentView('admin'))} // Dispatch action
+            disabled={false}
+          >
+            location history
           </Button>
 
           <Button
