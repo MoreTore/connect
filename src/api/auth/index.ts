@@ -37,7 +37,7 @@ export function getAppleAuthUrl(): string {
 }
 
 const GITHUB_OAUTH_PARAMS = {
-  client_id: '28c4ecb54bb7272cb5a4',
+  client_id: 'Ov23liy0AI1YCd15pypf',
   redirect_uri: `${BASE_URL}/v2/auth/h/redirect/`,
   scope: 'read:user',
 }

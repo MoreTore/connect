@@ -38,7 +38,7 @@ const DashboardDrawer: VoidComponent<DashboardDrawerProps> = (props) => {
           </Show>
         }
       >
-        comma connect
+        konik stable
       </TopAppBar>
       <h2 class="mx-4 mb-2 text-label-sm uppercase">Devices</h2>
       <Show when={props.devices} keyed>

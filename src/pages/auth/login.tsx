@@ -16,28 +16,14 @@ export default function Login() {
   return (
     <div class="flex min-h-screen flex-col items-center justify-center bg-background p-6">
       <div class="flex max-w-sm flex-col items-center gap-8">
-        <img src="/images/logo-connect-light.svg" alt="comma connect" width={96} height={96} />
+        <img src="/images/logo-connect-light.svg" alt="konik stable" width={96} height={96} />
 
         <div class="flex flex-col items-center gap-2 text-center">
-          <h1 class="text-display-sm font-extrabold md:mt-4">comma connect</h1>
-          <p class="text-body-lg">Manage your openpilot experience.</p>
+          <h1 class="text-display-sm font-extrabold md:mt-4">konik stable</h1>
+          <p class="text-body-lg">Manage your hoofpilot experience.</p>
         </div>
 
         <div class="flex flex-col items-stretch gap-4 self-stretch">
-          <Button
-            class="h-14 gap-4 xs:h-16"
-            href={getGoogleAuthUrl()}
-            leading={<img src="/images/logo-google.svg" alt="" width={32} height={32} />}
-          >
-            Sign in with Google
-          </Button>
-          <Button
-            class="h-14 gap-4 xs:h-16"
-            href={getAppleAuthUrl()}
-            leading={<img src="/images/logo-apple.svg" alt="" width={32} height={32} />}
-          >
-            Sign in with Apple&nbsp&nbsp
-          </Button>
           <Button
             class="h-14 gap-4 xs:h-16"
             href={getGitHubAuthUrl()}

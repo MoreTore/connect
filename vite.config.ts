@@ -13,8 +13,8 @@ export default defineConfig({
       ssr: false,
     }),
     sentryVitePlugin({
-      org: 'commaai',
-      project: 'new-connect',
+      org: 'konik',
+      project: 'new-stable',
       telemetry: false,
     }),
     {
