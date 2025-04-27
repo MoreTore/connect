@@ -6,47 +6,32 @@ import { athena as Athena } from '@moretore/api';
 import { deviceIsOnline } from '../../utils';
 import VideoPlayer from "../VideoPlayer";
 import Colors from '../../colors';
-import { Typography, Button, CircularProgress, Paper} from '@material-ui/core';
+import { Typography, Button, CircularProgress, Paper } from '@material-ui/core';
 import ResizeHandler from '../ResizeHandler';
 import AnsiToHtml from 'ansi-to-html';
 import { FixedSizeList } from 'react-window';
 import Joystick from './Joystick';
 import { setCurrentView } from '../../actions';
+import XTermShell from './XTermShell';
 
 const converter = new AnsiToHtml({ bg: "#2a2a2a", fg: "#f0f0f0" });
 
-function LiveViewControl({ state, handleConnectionToggle, sendCaptureTmux, dispatch }) {
+function LiveViewControl({ state, handleConnectionToggle, sendCaptureTmux, dispatch, activeView, setActiveView }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "start",
-        gap: "20px",
-        alignItems: "center",
-        marginBottom: "20px",
-      }}
-    >
+    <div style={{ display: "flex", justifyContent: "start", alignItems: "center", marginBottom: "20px", gap: 8 }}>
       <Button
-            style={{
-              backgroundColor: Colors.red400,
-              color: Colors.white,
-              textTransform: "none",
-            }}
-            onClick={() => dispatch(setCurrentView('dashboard'))}
-            disabled={false}
-          >
-            Back
+        style={{ backgroundColor: Colors.red400, color: Colors.white, textTransform: "none" }}
+        onClick={() => dispatch(setCurrentView('dashboard'))}
+        disabled={false}
+      >
+        Back
       </Button>
       <Button
         variant="contained"
         color={state.dataChannelReady ? "primary" : "secondary"}
-        disabled={state.reconnecting} // Disable button while reconnecting
-        onClick={handleConnectionToggle} // Toggle connection state
-        style={{
-          backgroundColor: state.reconnecting ? Colors.darken60 : Colors.blue500,
-          color: Colors.white,
-          textTransform: "none",
-        }}
+        disabled={state.reconnecting}
+        onClick={handleConnectionToggle}
+        style={{ backgroundColor: state.reconnecting ? Colors.darken60 : Colors.blue500, color: Colors.white, textTransform: "none" }}
       >
         {state.reconnecting ? (
           <CircularProgress size={24} style={{ color: Colors.white }} />
@@ -56,20 +41,18 @@ function LiveViewControl({ state, handleConnectionToggle, sendCaptureTmux, dispa
           "Reconnect"
         )}
       </Button>
-      {/* Add the Capture Tmux button */}
       <Button
         variant="contained"
         color="secondary"
-        disabled={!state.dataChannelReady} // Only enabled if data channel is ready
+        disabled={!state.dataChannelReady}
         onClick={sendCaptureTmux}
-        style={{
-          backgroundColor: state.dataChannelReady ? Colors.blue300 : Colors.grey600,
-          color: Colors.white,
-          textTransform: "none",
-        }}
+        style={{ backgroundColor: state.dataChannelReady ? Colors.blue300 : Colors.grey600, color: Colors.white, textTransform: "none" }}
       >
         Capture Tmux
       </Button>
+      <Button onClick={() => setActiveView("terminal")} variant={activeView === "terminal" ? "contained" : "outlined"} color="primary">Terminal</Button>
+      <Button onClick={() => setActiveView("video")} variant={activeView === "video" ? "contained" : "outlined"} color="primary">Video Players</Button>
+      <Button onClick={() => setActiveView("joystick")} variant={activeView === "joystick" ? "contained" : "outlined"} color="primary">Joystick</Button>
     </div>
   );
 }
@@ -197,7 +180,12 @@ class LiveView extends Component {
       controllerState: { steering: 0, throttle: 0, invertSteering: false },
       useVirtualControls: false,
       videoFullscreen: false,
+      shellResponses: [],
+      shellLoading: false,
+      activeView: "terminal",
     };
+    this.shellBuffer = [];
+    this.shellDone = true;
   }
 
   componentDidMount() {
@@ -409,6 +397,11 @@ class LiveView extends Component {
               });
             }
 
+            if (message.action === 'shell_result') {
+              // Handle shell output streaming
+              this.handleShellResponse(message);
+              return;
+            }
 
           } catch (error) {
             console.error("Error parsing data channel message:", error);
@@ -568,6 +561,35 @@ class LiveView extends Component {
     this.setState({ videoFullscreen: isFullscreen });
   }
 
+  handleShellResponse = (msg) => {
+    // msg: { action: 'shell_result', output, error, done }
+    this.shellBuffer.push({ output: msg.output, error: msg.error });
+    if (msg.done) {
+      this.setState({ shellResponses: [...this.state.shellResponses, ...this.shellBuffer], shellLoading: false });
+      this.shellBuffer = [];
+      this.shellDone = true;
+    } else {
+      this.setState({ shellResponses: [...this.state.shellResponses, { output: msg.output, error: msg.error }], shellLoading: false });
+      this.shellBuffer = [];
+      this.shellDone = false;
+    }
+  };
+
+  handleSendShellCommand = (command) => {
+    const { dataChannel, dataChannelReady } = this.state;
+    if (!dataChannelReady || !dataChannel) return;
+    this.setState({ shellLoading: true });
+    this.shellBuffer = [];
+    this.shellDone = false;
+    this.setState({ shellResponses: [] }); // Clear previous output
+    const msg = JSON.stringify({ action: 'shell', command });
+    dataChannel.send(msg);
+  };
+
+  setActiveView = (view) => {
+    this.setState({ activeView: view });
+  };
+
   render() {
     const { 
       streams, 
@@ -580,24 +602,49 @@ class LiveView extends Component {
       controllerEnabled, 
       controllerState,
       useVirtualControls,
-      videoFullscreen
+      videoFullscreen,
+      shellResponses,
+      shellLoading,
+      activeView,
     } = this.state;
     
     return (
       <div style={{ padding: "20px", backgroundColor: Colors.grey900, minHeight: "100vh" }}>
-  
-        {<LiveViewControl state={this.state} handleConnectionToggle={this.handleConnectionToggle} sendCaptureTmux={this.sendCaptureTmux} dispatch={this.props.dispatch}/>}
+        <LiveViewControl
+          state={this.state}
+          handleConnectionToggle={this.handleConnectionToggle}
+          sendCaptureTmux={this.sendCaptureTmux}
+          dispatch={this.props.dispatch}
+          activeView={activeView}
+          setActiveView={this.setActiveView}
+        />
         {loading && ( <Typography style={{ textAlign: "center", color: Colors.white }}>Loading...</Typography> )}
         {status && ( <Typography style={{ color: Colors.blue500, textAlign: "center" }}>{status}</Typography> )}
         {error && ( <Typography style={{ color: Colors.red500, textAlign: "center" }}>{error}</Typography> )}
         {tmuxCaptureOutput && ( <ResponsiveTextPaper tmuxCaptureOutput={tmuxCaptureOutput} /> )}
-        
-        {/* Always render Joystick but hide it visually when in fullscreen mode */}
-        {dataChannelReady && (
+        {activeView === "terminal" && dataChannelReady && (
+          <XTermShell
+            dataChannel={dataChannel}
+            dataChannelReady={dataChannelReady}
+            shellResponses={shellResponses}
+            onSendCommand={this.handleSendShellCommand}
+          />
+        )}
+        {activeView === "video" && streams && (
+          <LiveStreamContainer
+            streams={streams}
+            handleTrackAction={this.handleTrackAction}
+            controllerState={controllerState}
+            useVirtualControls={useVirtualControls}
+            handleJoystickControl={this.handleJoystickControl}
+            setVideoFullscreen={this.setVideoFullscreen}
+          />
+        )}
+        {activeView === "joystick" && dataChannelReady && (
           <div style={{ display: videoFullscreen ? 'none' : 'block' }}>
-            <Joystick 
-              dataChannel={dataChannel} 
-              dataChannelReady={dataChannelReady} 
+            <Joystick
+              dataChannel={dataChannel}
+              dataChannelReady={dataChannelReady}
               controllerEnabled={controllerEnabled}
               setControllerEnabled={this.setControllerEnabled}
               updateControllerState={this.updateControllerState}
@@ -606,18 +653,6 @@ class LiveView extends Component {
             />
           </div>
         )}
-        
-        {streams && ( 
-          <LiveStreamContainer 
-            streams={streams} 
-            handleTrackAction={this.handleTrackAction} 
-            controllerState={controllerState}
-            useVirtualControls={useVirtualControls}
-            handleJoystickControl={this.handleJoystickControl}
-            setVideoFullscreen={this.setVideoFullscreen}
-          /> 
-        )}
-  
       </div>
     );
   }
