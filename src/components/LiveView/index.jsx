@@ -110,11 +110,22 @@ function LiveStreamContainer({ streams, handleTrackAction, controllerState, useV
 
 function ResponsiveTextPaper({ tmuxCaptureOutput }) {
   const [containerWidth, setContainerWidth] = useState(window.innerWidth);
+  const [copied, setCopied] = useState(false);
 
   // Callback to handle resize events
   const handleResize = (width, height) => {
     console.log("Window resized to:", width, height); // Debug log
     setContainerWidth(width);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(tmuxCaptureOutput);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      setCopied(false);
+    }
   };
 
   const lines = tmuxCaptureOutput.split("\n");
@@ -135,9 +146,21 @@ function ResponsiveTextPaper({ tmuxCaptureOutput }) {
           overflowY: "auto", // Scrollable Paper
           fontFamily: "monospace",
           fontSize: `clamp(14px, ${Math.min(containerWidth / 100 + 0.5, 24)}px, 24px)`, // Fix fontSize calc
+          position: "relative",
         }}
         elevation={3}
       >
+        {/* Copy button always visible at top right */}
+        <div style={{ position: "sticky", top: 0, right: 0, display: "flex", justifyContent: "flex-end", zIndex: 2 }}>
+          <Button
+            size="small"
+            onClick={handleCopy}
+            style={{ minWidth: 0, padding: 4, color: copied ? Colors.green400 : Colors.white, background: "rgba(30,30,30,0.7)", borderRadius: 4, margin: 2 }}
+            title={copied ? "Copied!" : "Copy"}
+          >
+            {copied ? "Copied!" : "Copy"}
+          </Button>
+        </div>
         <FixedSizeList
           itemCount={lines.length}
           itemSize={20} // Fixed height per item
