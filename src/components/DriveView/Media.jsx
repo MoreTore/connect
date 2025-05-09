@@ -210,9 +210,16 @@ const FILE_NAMES = {
   cameras: 'fcamera.hevc',
   dcameras: 'dcamera.hevc',
   ecameras: 'ecamera.hevc',
-  qlogs: 'qlog.bz2',
-  logs: 'rlog.bz2',
+  qlogs: ['qlog.bz2', 'qlog.zst'],
+  logs: ['rlog.bz2', 'rlog.zst'],
 };
+
+function getFileName(type) {
+  if (Array.isArray(FILE_NAMES[type])) {
+    return FILE_NAMES[type][0];
+  }
+  return FILE_NAMES[type];
+}
 
 const MediaType = {
   VIDEO: 'video',
@@ -343,7 +350,7 @@ class Media extends Component {
     }));
 
     const routeNoDongleId = currentRoute.fullname.split('|')[1];
-    const path = `${routeNoDongleId}--${getSegmentNumber(currentRoute)}/${FILE_NAMES[type]}`;
+    const path = `${routeNoDongleId}--${getSegmentNumber(currentRoute)}/${getFileName(type)}`;
     const fileName = `${dongleId}|${routeNoDongleId}--${getSegmentNumber(currentRoute)}/${type}`;
 
     const uploading = {};
@@ -386,7 +393,7 @@ class Media extends Component {
 
     const paths = Object.keys(uploading).map((fileName) => {
       const [seg, type] = fileName.split('/');
-      return `${seg.split('|')[1]}/${FILE_NAMES[type]}`;
+      return `${seg.split('|')[1]}/${getFileName(type)}`;
     });
 
     const urls = await fetchUploadUrls(dongleId, paths);

@@ -119,8 +119,8 @@ const FILE_NAMES = {
   cameras: 'fcamera.hevc',
   dcameras: 'dcamera.hevc',
   ecameras: 'ecamera.hevc',
-  qlogs: 'qlog.bz2',
-  logs: 'rlog.bz2',
+  qlogs: ['qlog.bz2', 'qlog.zst'],
+  logs: ['rlog.bz2', 'rlog.zst'],
 };
 
 class UploadQueue extends Component {
@@ -238,6 +238,12 @@ class UploadQueue extends Component {
                         const [seg, type] = upload.fileName.split('/');
                         const prog = upload.progress * 100;
                         const segString = seg.split('|')[1];
+                        let typeDisplay = type;
+                        if (Array.isArray(FILE_NAMES[type])) {
+                          typeDisplay = FILE_NAMES[type][0].split('.')[0];
+                        } else if (FILE_NAMES[type]) {
+                          typeDisplay = FILE_NAMES[type].split('.')[0];
+                        }
                         return (
                           <tr key={ id }>
                             <td className={ classes.uploadCell } style={ cellStyle }>
@@ -247,7 +253,7 @@ class UploadQueue extends Component {
                               </div>
                             </td>
                             <td className={ classes.uploadCell } style={ cellStyle }>
-                              { FILE_NAMES[type].split('.')[0].substring(0, logNameLength) }
+                              { typeDisplay.substring(0, logNameLength) }
                             </td>
                             { upload.current
                               ? (
