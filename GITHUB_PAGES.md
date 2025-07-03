@@ -1,6 +1,6 @@
 # GitHub Pages Deployment
 
-This project is configured to automatically deploy to GitHub Pages when changes are pushed to the `master` branch.
+This project is configured to automatically deploy to GitHub Pages when changes are pushed to the `live` branch.
 
 ## Setup Instructions
 
@@ -13,7 +13,7 @@ This project is configured to automatically deploy to GitHub Pages when changes 
    ```bash
    git add .
    git commit -m "Add GitHub Pages deployment"
-   git push origin master
+   git push origin live
    ```
 
 3. **Monitor the deployment:**
