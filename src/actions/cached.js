@@ -471,7 +471,12 @@ export function fetchDriveCoords(route) {
         if (USE_LOCAL_COORDS_DATA) {
           url.hostname = 'chffrprivate.azureedge.local';
         }
-        const resp = await fetch(url, { method: 'GET' });
+        const resp = await fetch(url, { 
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'max-age=2592000' // 30 days cache
+          }
+        });
         if (!resp.ok) {
           return [];
         }

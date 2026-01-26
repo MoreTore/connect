@@ -19,7 +19,6 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    base: mode === 'production' ? '/connect/' : '/',
     build: {
       // Required for Sentry
       sourcemap: true,
